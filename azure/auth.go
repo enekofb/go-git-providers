@@ -2,9 +2,12 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"github.com/fluxcd/go-git-providers/gitprovider"
 	"github.com/jenkins-x/go-scm/scm"
 	"github.com/jenkins-x/go-scm/scm/driver/azure"
+	"github.com/jenkins-x/go-scm/scm/transport"
+	"net/http"
 )
 
 const domain = "https://dev.azure.com"
@@ -12,6 +15,7 @@ const domain = "https://dev.azure.com"
 type ClientOptions struct {
 	org     string
 	project string
+	token   string
 }
 
 type wrapper struct {
@@ -24,6 +28,14 @@ func NewClient(clientOptions ClientOptions) (gitprovider.Client, error) {
 	org := clientOptions.org
 
 	c, err := azure.New(domain, org, project)
+
+	c.Client = &http.Client{
+		Transport: &transport.Custom{
+			Before: func(r *http.Request) {
+				r.Header.Set("Authorization", fmt.Sprintf("Basic %s", clientOptions.token))
+			},
+		},
+	}
 
 	return wrapper{client: c}, err
 }
@@ -60,7 +72,7 @@ func (c wrapper) OrgRepositories() gitprovider.OrgRepositoriesClient {
 
 // UserRepositories returns the UserRepositoriesClient handling sets of repositories for a user.
 func (c wrapper) UserRepositories() gitprovider.UserRepositoriesClient {
-	return nil
+	return &UserRepositoriesClient{client: c.client}
 }
 
 // HasTokenPermission returns true if the given token has the given permissions.

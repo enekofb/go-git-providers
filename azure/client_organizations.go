@@ -35,6 +35,8 @@ func (c *OrganizationsClient) Get(ctx context.Context, ref gitprovider.Organizat
 	return nil, errors.New("not implemented")
 }
 
+// TODO: not supported by scm
+// https://github.com/jenkins-x/go-scm/blob/main/scm/driver/azure/org.go
 func (c *OrganizationsClient) List(ctx context.Context) ([]gitprovider.Organization, error) {
 	return nil, errors.New("not implemented")
 }

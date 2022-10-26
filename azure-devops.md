@@ -97,11 +97,6 @@ Given azure devops and user for it
 ```
 Feature: can support azure devops for wge
 
-Scenario: can create azure devops repo
-Given an azure devops user
-When create git repo `my-repo`
-Then repo has been succesufully created
-
 
 Scenario: can create branch on a repo azure devops repo
 Given an azure devops user
@@ -120,7 +115,14 @@ Then pull request is created and got its url
 ```
 
 
+Some example queries
 
+```bash 
+➜  go-git-providers git:(add-azure-devops) ✗ curl -vk -u username:"${AZURE_DEVOPS_TOKEN}" https://dev.azure.com/efernandezbreis/weaveworks/_apis/git/repositories/weaveworks\?api-version=6.0
+
+{"id":"28a51a24-5148-4d1c-920c-4493be96ae25","name":"weaveworks","url":"https://dev.azure.com/efernandezbreis/d603df47-831a-4b35-a24d-2558cdd64f01/_apis/git/repositories/28a51a24-5148-4d1c-920c-4493be96ae25","project":{"id":"d603df47-831a-4b35-a24d-2558cdd64f01","name":"weaveworks","url":"https://dev.azure.com/efernandezbreis/_apis/projects/d603df47-831a-4b35-a24d-2558cdd64f01","state":"wellFormed","revision":11,"visibility":"private","lastUpdateTime":"2022-10-26T18:56:39.583Z"},"size":0,"remoteUrl":"https://efernandezbreis@dev.azure.com/efernandezbreis/weaveworks/_git/weaveworks","sshUrl":"git@ssh.dev.azure.com:v3/efernandezbreis/weaveworks/weaveworks","webUrl":"https://dev.azure.com/efernandezbreis/weaveworks/_git/weaveworks","_links":{"self":{"href":"https://dev.azure.com/efernandezbreis/d603df47-831a-4b35-a24d-2558cdd64f01/_apis/git/repositories/28a51a24-5148-4d1c-920c-4493be96ae25"},"project":{"href":"vstfs:///Classification/TeamProject/d603df47-831a-4b35-a24d-2558cdd64f01"},"web":{"href":"https://dev.azure.com/efernandezbreis/weaveworks/_git/weaveworks"},"ssh":{"href":"git@ssh.dev.azure.com:v3/efernandezbreis/weaveworks/weaveworks"},"commits":{"href":"https://dev.azure.com/efernandezbreis/d603df47-831a-4b35-a24d-2558cdd64f01/_apis/git/repositories/28a51a24-5148-4d1c-920c-4493be96ae25/commits"},"refs":{"href":"https://dev.azure.com/efernandezbreis/d603df47-831a-4b35-a24d-2558cdd64f01/_apis/git/repositories/28a51a24-5148-4d1c-920c-4493be96ae25/refs"},"pullRequests":{"href":"https://dev.azure.com/efernandezbreis/d603df47-831a-4b35-a24d-2558cdd64f01/_apis/git/repositories/28a51a24-5148-4d1c-920c-4493be96ae25/pullRequests"},"items":{"href":"https://dev.azure.com/efernandezbreis/d603df47-831a-4b35-a24d-2558cdd64f01/_apis/git/repositories/28a51a24-5148-4d1c-920c-4493be96ae25/items"},"pushes":{"href":"https://dev.azure.com/efernandezbreis/d603df47-831a-4b35-a24d-2558cdd64f01/_apis/git/repositories/28a51a24-5148-4d1c-920c-4493be96ae25/pushes"}},"isDisabled":false}%
+
+```
 
 
 
