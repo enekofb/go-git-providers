@@ -150,7 +150,11 @@ var _ = Describe("Azure Devops Provider", func() {
 		}
 
 		var err error
-		c, err = NewClient(ClientOptions{})
+		c, err = NewClient(ClientOptions{
+			org:     "efernandezbreis",
+			project: "weaveworks",
+		},
+		)
 		Expect(err).ToNot(HaveOccurred())
 	})
 

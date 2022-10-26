@@ -6,7 +6,6 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-
 	client, err := NewClient(ClientOptions{
 		org:     "efernandezbreis",
 		project: "weaveworks",
@@ -15,4 +14,5 @@ func TestNewClient(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, client)
 	require.Equal(t, client.SupportedDomain(), "https://dev.azure.com")
+	require.NotNil(t, client.Organizations())
 }

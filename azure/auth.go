@@ -50,7 +50,7 @@ func (c wrapper) Raw() interface{} {
 
 // Organizations returns the OrganizationsClient handling sets of organizations.
 func (c wrapper) Organizations() gitprovider.OrganizationsClient {
-	return nil
+	return &OrganizationsClient{client: c.client}
 }
 
 // OrgRepositories returns the OrgRepositoriesClient handling sets of repositories in an organization.
