@@ -184,7 +184,7 @@ var _ = Describe("Azure Devops Provider", func() {
 			if err == nil && len(commits) == 0 {
 				err = errors.New("empty commits list")
 			}
-			return retryOp.IsRetryable(err, fmt.Sprintf("get commits, repository: %s", userRepo.Repository().GetRepository()))
+			return err == nil && len(commits) > 0
 		}, retryOp.Timeout(), retryOp.Interval()).Should(BeTrue())
 
 		latestCommit := commits[0]

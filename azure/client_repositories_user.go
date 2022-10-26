@@ -34,6 +34,7 @@ type UserRepositoriesClient struct {
 
 type AzureUserRepository struct {
 	repository *scm.Repository
+	client     *scm.Client
 }
 
 func (a AzureUserRepository) APIObject() interface{} {
@@ -63,8 +64,11 @@ func (a AzureUserRepository) Repository() gitprovider.RepositoryRef {
 }
 
 func (a AzureUserRepository) Get() gitprovider.RepositoryInfo {
-	//TODO implement me
-	panic("implement me")
+	return gitprovider.RepositoryInfo{
+		Description:   &(a.repository.FullName),
+		DefaultBranch: &(a.repository.Branch),
+		Visibility:    nil,
+	}
 }
 
 func (a AzureUserRepository) Set(info gitprovider.RepositoryInfo) error {
@@ -77,9 +81,48 @@ func (a AzureUserRepository) DeployKeys() gitprovider.DeployKeyClient {
 	panic("implement me")
 }
 
-func (a AzureUserRepository) Commits() gitprovider.CommitClient {
+type AzureCommitClient struct {
+	repository AzureUserRepository
+}
+
+type AzureCommit struct {
+	fileEntry *scm.FileEntry
+}
+
+func (a AzureCommit) APIObject() interface{} {
+	return a.fileEntry
+}
+
+func (a AzureCommit) Get() gitprovider.CommitInfo {
+	return gitprovider.CommitInfo{
+		Sha: a.fileEntry.Sha,
+	}
+}
+
+// TODO: pagination not supported
+func (a AzureUserRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
+	commit, _, err := a.client.Contents.List(ctx, a.repository.ID, "", branch)
+	if err != nil {
+		return nil, err
+	}
+
+	commits := make([]gitprovider.Commit, 0, len(commit))
+
+	for _, fe := range commit {
+
+		commits = append(commits, AzureCommit{fileEntry: fe})
+
+	}
+	return commits, nil
+}
+
+func (a AzureUserRepository) Create(ctx context.Context, branch string, message string, files []gitprovider.CommitFile) (gitprovider.Commit, error) {
 	//TODO implement me
 	panic("implement me")
+}
+
+func (a AzureUserRepository) Commits() gitprovider.CommitClient {
+	return a
 }
 
 func (a AzureUserRepository) Branches() gitprovider.BranchClient {
@@ -112,7 +155,10 @@ func (c *UserRepositoriesClient) Get(ctx context.Context, ref gitprovider.UserRe
 		return nil, err
 	}
 
-	return AzureUserRepository{repository: repository}, nil
+	return AzureUserRepository{
+		repository: repository,
+		client:     c.client,
+	}, nil
 }
 
 // List all repositories in the given organization.
