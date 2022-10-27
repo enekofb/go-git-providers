@@ -112,8 +112,11 @@ func (o OrgRepository) Create(ctx context.Context, branch string, message string
 		if response.Status != http.StatusCreated {
 			return nil, errors.New(fmt.Sprintf("create commit did not get a 200 back %v", response.Status))
 		}
-
 	}
 
-	return nil, nil
+	page, err = o.ListPage(ctx, branch, 10, 1)
+	if err != nil {
+		return nil, err
+	}
+	return page[0], nil
 }

@@ -124,15 +124,9 @@ Some example queries
 
 ```
 
+# Limitations and furthere info 
 
-
-
-
-
-
-
-
-
-
+- scm support for orgs in general, i believe in the api there is no such a concept  
+- 
 
 
