@@ -158,8 +158,9 @@ func (o OrgRepository) Branches() gitprovider.BranchClient {
 }
 
 func (o OrgRepository) PullRequests() gitprovider.PullRequestClient {
-	//TODO implement me
-	panic("implement me")
+	return OrgRepositoryPullRequests{
+		repository: o,
+	}
 }
 
 func (o OrgRepository) Files() gitprovider.FileClient {
