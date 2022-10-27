@@ -128,11 +128,6 @@ var _ = Describe("Azure Devops Provider", func() {
 	var (
 		ctx context.Context = context.Background()
 		c   gitprovider.Client
-
-		testOrgRepoName  string
-		testUserRepoName string
-		testOrgName      string = "fluxcd-testing"
-		testUser         string = "fluxcd-gitprovider-bot"
 	)
 
 	BeforeSuite(func() {
@@ -143,14 +138,6 @@ var _ = Describe("Azure Devops Provider", func() {
 		var token string
 		if rawToken != "" {
 			token = base64.StdEncoding.EncodeToString([]byte(":" + rawToken))
-		}
-
-		if orgName := os.Getenv("GIT_PROVIDER_ORGANIZATION"); len(orgName) != 0 {
-			testOrgName = orgName
-		}
-
-		if gitProviderUser := os.Getenv("GIT_PROVIDER_USER"); len(gitProviderUser) != 0 {
-			testUser = gitProviderUser
 		}
 
 		var err error
@@ -211,30 +198,6 @@ var _ = Describe("Azure Devops Provider", func() {
 		Expect(pr.Get().WebURL).ToNot(BeEmpty())
 		Expect(pr.Get().Merged).To(BeFalse())
 
-	})
-
-	AfterSuite(func() {
-		if os.Getenv("SKIP_CLEANUP") == "1" {
-			return
-		}
-		// Don't do anything more if c wasn't created
-		if c == nil {
-			return
-		}
-
-		// Delete the org test repo used
-		orgRepo, err := c.OrgRepositories().Get(ctx, newOrgRepoRef(testOrgName, testOrgRepoName))
-		if err != nil && len(os.Getenv("CLEANUP_ALL")) > 0 {
-			fmt.Fprintf(os.Stderr, "failed to get repo: %s in org: %s, error: %s\n", testOrgRepoName, testOrgName, err)
-			fmt.Fprintf(os.Stderr, "CLEANUP_ALL set so continuing\n")
-		} else {
-			Expect(err).ToNot(HaveOccurred())
-			Expect(orgRepo.Delete(ctx)).ToNot(HaveOccurred())
-		}
-		// Delete the user test repo used
-		userRepo, err := c.UserRepositories().Get(ctx, newUserRepoRef(testUser, testUserRepoName))
-		Expect(err).ToNot(HaveOccurred())
-		Expect(userRepo.Delete(ctx)).ToNot(HaveOccurred())
 	})
 })
 
