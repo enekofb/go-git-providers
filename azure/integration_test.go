@@ -150,55 +150,55 @@ var _ = Describe("Azure Devops Provider", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	//It("should be possible to create a pr for a user repository", func() {
-	//
-	//	userRepoRef := newUserRepoRef("efernandezbreis", "weaveworks")
-	//
-	//	var userRepo gitprovider.UserRepository
-	//	retryOp := testutils.RetryOp{}
-	//	Eventually(func() bool {
-	//		var err error
-	//		userRepo, err = c.UserRepositories().Get(ctx, userRepoRef)
-	//		return retryOp.IsRetryable(err, fmt.Sprintf("get user repository: %s", userRepoRef.RepositoryName))
-	//	}, retryOp.Timeout(), retryOp.Interval()).Should(BeTrue())
-	//
-	//	defaultBranch := userRepo.Get().DefaultBranch
-	//
-	//	var commits []gitprovider.Commit = []gitprovider.Commit{}
-	//	Eventually(func() bool {
-	//		var err error
-	//		commits, err = userRepo.Commits().ListPage(ctx, *defaultBranch, 1, 0)
-	//		if err == nil && len(commits) == 0 {
-	//			err = errors.New("empty commits list")
-	//		}
-	//		return err == nil && len(commits) > 0
-	//	}, retryOp.Timeout(), retryOp.Interval()).Should(BeTrue())
-	//
-	//	latestCommit := commits[0]
-	//
-	//	branchName := fmt.Sprintf("test-branch-%03d", rand.Intn(1000))
-	//
-	//	err := userRepo.Branches().Create(ctx, branchName, latestCommit.Get().Sha)
-	//	Expect(err).ToNot(HaveOccurred())
-	//
-	//	path := "setup/config.txt"
-	//	content := "yaml content"
-	//	files := []gitprovider.CommitFile{
-	//		{
-	//			Path:    &path,
-	//			Content: &content,
-	//		},
-	//	}
-	//
-	//	_, err = userRepo.Commits().Create(ctx, branchName, "added config file", files)
-	//	Expect(err).ToNot(HaveOccurred())
-	//
-	//	pr, err := userRepo.PullRequests().Create(ctx, "Added config file", branchName, *defaultBranch, "added config file")
-	//	Expect(err).ToNot(HaveOccurred())
-	//	Expect(pr.Get().WebURL).ToNot(BeEmpty())
-	//	Expect(pr.Get().Merged).To(BeFalse())
-	//
-	//})
+	It("should be possible to create a pr for a user repository", func() {
+
+		userRepoRef := newUserRepoRef("efernandezbreis", "weaveworks")
+
+		var userRepo gitprovider.UserRepository
+		retryOp := testutils.RetryOp{}
+		Eventually(func() bool {
+			var err error
+			userRepo, err = c.UserRepositories().Get(ctx, userRepoRef)
+			return retryOp.IsRetryable(err, fmt.Sprintf("get user repository: %s", userRepoRef.RepositoryName))
+		}, retryOp.Timeout(), retryOp.Interval()).Should(BeTrue())
+
+		defaultBranch := userRepo.Get().DefaultBranch
+
+		var commits []gitprovider.Commit = []gitprovider.Commit{}
+		Eventually(func() bool {
+			var err error
+			commits, err = userRepo.Commits().ListPage(ctx, *defaultBranch, 1, 0)
+			if err == nil && len(commits) == 0 {
+				err = errors.New("empty commits list")
+			}
+			return err == nil && len(commits) > 0
+		}, retryOp.Timeout(), retryOp.Interval()).Should(BeTrue())
+
+		latestCommit := commits[0]
+
+		branchName := fmt.Sprintf("test-branch-%03d", rand.Intn(1000))
+
+		err := userRepo.Branches().Create(ctx, branchName, latestCommit.Get().Sha)
+		Expect(err).ToNot(HaveOccurred())
+
+		path := "setup/config.txt"
+		content := "yaml content"
+		files := []gitprovider.CommitFile{
+			{
+				Path:    &path,
+				Content: &content,
+			},
+		}
+
+		_, err = userRepo.Commits().Create(ctx, branchName, "added config file", files)
+		Expect(err).ToNot(HaveOccurred())
+
+		pr, err := userRepo.PullRequests().Create(ctx, "Added config file", branchName, *defaultBranch, "added config file")
+		Expect(err).ToNot(HaveOccurred())
+		Expect(pr.Get().WebURL).ToNot(BeEmpty())
+		Expect(pr.Get().Merged).To(BeFalse())
+
+	})
 
 	It("should be possible to create a pr for an org repository", func() {
 
