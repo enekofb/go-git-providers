@@ -13,9 +13,9 @@ import (
 const domain = "https://dev.azure.com"
 
 type ClientOptions struct {
-	org     string
-	project string
-	token   string
+	Org     string
+	Project string
+	Token   string
 }
 
 type wrapper struct {
@@ -24,15 +24,15 @@ type wrapper struct {
 
 func NewClient(clientOptions ClientOptions) (gitprovider.Client, error) {
 
-	project := clientOptions.project
-	org := clientOptions.org
+	project := clientOptions.Project
+	org := clientOptions.Org
 
 	c, err := azure.New(domain, org, project)
 
 	c.Client = &http.Client{
 		Transport: &transport.Custom{
 			Before: func(r *http.Request) {
-				r.Header.Set("Authorization", fmt.Sprintf("Basic %s", clientOptions.token))
+				r.Header.Set("Authorization", fmt.Sprintf("Basic %s", clientOptions.Token))
 			},
 		},
 	}
@@ -60,22 +60,22 @@ func (c wrapper) Raw() interface{} {
 	return nil
 }
 
-// Organizations returns the OrganizationsClient handling sets of organizations.
+// Organizations returns the Organisations handling sets of organizations.
 func (c wrapper) Organizations() gitprovider.OrganizationsClient {
-	return &OrganizationsClient{client: c.client}
+	return &Organisations{client: c.client}
 }
 
 // OrgRepositories returns the OrgRepositoriesClient handling sets of repositories in an organization.
 func (c wrapper) OrgRepositories() gitprovider.OrgRepositoriesClient {
-	return nil
+	return &OrgRepositories{client: c.client}
 }
 
-// UserRepositories returns the UserRepositoriesClient handling sets of repositories for a user.
+// UserRepositories returns the UserRepositories handling sets of repositories for a user.
 func (c wrapper) UserRepositories() gitprovider.UserRepositoriesClient {
-	return &UserRepositoriesClient{client: c.client}
+	return &UserRepositories{client: c.client}
 }
 
-// HasTokenPermission returns true if the given token has the given permissions.
+// HasTokenPermission returns true if the given Token has the given permissions.
 func (c wrapper) HasTokenPermission(ctx context.Context, permission gitprovider.TokenPermission) (bool, error) {
 	return false, nil
 }

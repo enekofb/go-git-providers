@@ -142,32 +142,87 @@ var _ = Describe("Azure Devops Provider", func() {
 
 		var err error
 		c, err = NewClient(ClientOptions{
-			org:     "efernandezbreis",
-			project: "weaveworks",
-			token:   token,
+			Org:     "efernandezbreis",
+			Project: "weaveworks",
+			Token:   token,
 		},
 		)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	It("should be possible to create a pr for a user repository", func() {
+	//It("should be possible to create a pr for a user repository", func() {
+	//
+	//	userRepoRef := newUserRepoRef("efernandezbreis", "weaveworks")
+	//
+	//	var userRepo gitprovider.UserRepository
+	//	retryOp := testutils.RetryOp{}
+	//	Eventually(func() bool {
+	//		var err error
+	//		userRepo, err = c.UserRepositories().Get(ctx, userRepoRef)
+	//		return retryOp.IsRetryable(err, fmt.Sprintf("get user repository: %s", userRepoRef.RepositoryName))
+	//	}, retryOp.Timeout(), retryOp.Interval()).Should(BeTrue())
+	//
+	//	defaultBranch := userRepo.Get().DefaultBranch
+	//
+	//	var commits []gitprovider.Commit = []gitprovider.Commit{}
+	//	Eventually(func() bool {
+	//		var err error
+	//		commits, err = userRepo.Commits().ListPage(ctx, *defaultBranch, 1, 0)
+	//		if err == nil && len(commits) == 0 {
+	//			err = errors.New("empty commits list")
+	//		}
+	//		return err == nil && len(commits) > 0
+	//	}, retryOp.Timeout(), retryOp.Interval()).Should(BeTrue())
+	//
+	//	latestCommit := commits[0]
+	//
+	//	branchName := fmt.Sprintf("test-branch-%03d", rand.Intn(1000))
+	//
+	//	err := userRepo.Branches().Create(ctx, branchName, latestCommit.Get().Sha)
+	//	Expect(err).ToNot(HaveOccurred())
+	//
+	//	path := "setup/config.txt"
+	//	content := "yaml content"
+	//	files := []gitprovider.CommitFile{
+	//		{
+	//			Path:    &path,
+	//			Content: &content,
+	//		},
+	//	}
+	//
+	//	_, err = userRepo.Commits().Create(ctx, branchName, "added config file", files)
+	//	Expect(err).ToNot(HaveOccurred())
+	//
+	//	pr, err := userRepo.PullRequests().Create(ctx, "Added config file", branchName, *defaultBranch, "added config file")
+	//	Expect(err).ToNot(HaveOccurred())
+	//	Expect(pr.Get().WebURL).ToNot(BeEmpty())
+	//	Expect(pr.Get().Merged).To(BeFalse())
+	//
+	//})
 
-		userRepoRef := newUserRepoRef("efernandezbreis", "weaveworks")
+	It("should be possible to create a pr for an org repository", func() {
 
-		var userRepo gitprovider.UserRepository
+		// get org
+		orgRef := newOrgRef("efernandezbreis")
+		var _ gitprovider.Organization
 		retryOp := testutils.RetryOp{}
 		Eventually(func() bool {
 			var err error
-			userRepo, err = c.UserRepositories().Get(ctx, userRepoRef)
-			return retryOp.IsRetryable(err, fmt.Sprintf("get user repository: %s", userRepoRef.RepositoryName))
+			_, err = c.Organizations().Get(ctx, orgRef)
+			return retryOp.IsRetryable(err, fmt.Sprintf("get org: %s", orgRef.Organization))
 		}, retryOp.Timeout(), retryOp.Interval()).Should(BeTrue())
 
-		defaultBranch := userRepo.Get().DefaultBranch
+		// get org repository
+
+		orgRepoRef := newOrgRepoRef(orgRef.Organization, "weaveworks")
+		orgRepo, err := c.OrgRepositories().Get(ctx, orgRepoRef)
+
+		defaultBranch := orgRepo.Get().DefaultBranch
 
 		var commits []gitprovider.Commit = []gitprovider.Commit{}
 		Eventually(func() bool {
 			var err error
-			commits, err = userRepo.Commits().ListPage(ctx, *defaultBranch, 1, 0)
+			commits, err = orgRepo.Commits().ListPage(ctx, *defaultBranch, 1, 0)
 			if err == nil && len(commits) == 0 {
 				err = errors.New("empty commits list")
 			}
@@ -178,7 +233,7 @@ var _ = Describe("Azure Devops Provider", func() {
 
 		branchName := fmt.Sprintf("test-branch-%03d", rand.Intn(1000))
 
-		err := userRepo.Branches().Create(ctx, branchName, latestCommit.Get().Sha)
+		err = orgRepo.Branches().Create(ctx, branchName, latestCommit.Get().Sha)
 		Expect(err).ToNot(HaveOccurred())
 
 		path := "setup/config.txt"
@@ -190,10 +245,10 @@ var _ = Describe("Azure Devops Provider", func() {
 			},
 		}
 
-		_, err = userRepo.Commits().Create(ctx, branchName, "added config file", files)
+		_, err = orgRepo.Commits().Create(ctx, branchName, "added config file", files)
 		Expect(err).ToNot(HaveOccurred())
 
-		pr, err := userRepo.PullRequests().Create(ctx, "Added config file", branchName, *defaultBranch, "added config file")
+		pr, err := orgRepo.PullRequests().Create(ctx, "Added config file", branchName, *defaultBranch, "added config file")
 		Expect(err).ToNot(HaveOccurred())
 		Expect(pr.Get().WebURL).ToNot(BeEmpty())
 		Expect(pr.Get().Merged).To(BeFalse())
