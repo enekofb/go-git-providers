@@ -19,7 +19,9 @@ package azure
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/jenkins-x/go-scm/scm"
+	"net/http"
 
 	"github.com/fluxcd/go-git-providers/gitprovider"
 )
@@ -85,6 +87,10 @@ type AzureCommitClient struct {
 	repository AzureUserRepository
 }
 
+type AzureBranchClient struct {
+	repository AzureUserRepository
+}
+
 type AzureCommit struct {
 	fileEntry *scm.FileEntry
 }
@@ -117,8 +123,34 @@ func (a AzureUserRepository) ListPage(ctx context.Context, branch string, perPag
 }
 
 func (a AzureUserRepository) Create(ctx context.Context, branch string, message string, files []gitprovider.CommitFile) (gitprovider.Commit, error) {
-	//TODO implement me
-	panic("implement me")
+	//TODO find a better way to get latest commit sha
+	page, err := a.ListPage(ctx, branch, 10, 1)
+	if err != nil {
+		return nil, err
+	}
+	currentCommit := page[0].Get().Sha
+
+	for _, file := range files {
+		data := *file.Content
+		path := *file.Path
+
+		createParams := scm.ContentParams{
+			Message: message,
+			Data:    []byte(data),
+			Branch:  branch,
+			Ref:     currentCommit,
+		}
+		response, err := a.client.Contents.Create(ctx, a.repository.ID, path, &createParams)
+		if err != nil {
+			return nil, err
+		}
+		if response.Status != http.StatusCreated {
+			return nil, errors.New(fmt.Sprintf("create commit did not get a 200 back %v", response.Status))
+		}
+
+	}
+
+	return nil, nil
 }
 
 func (a AzureUserRepository) Commits() gitprovider.CommitClient {
@@ -126,8 +158,27 @@ func (a AzureUserRepository) Commits() gitprovider.CommitClient {
 }
 
 func (a AzureUserRepository) Branches() gitprovider.BranchClient {
-	//TODO implement me
-	panic("implement me")
+	return AzureBranchClient{
+		repository: a,
+	}
+}
+
+func (a AzureBranchClient) Create(ctx context.Context, branch, sha string) error {
+
+	input := &scm.ReferenceInput{
+		Name: branch,
+		Sha:  sha,
+	}
+	_, response, err := a.repository.client.Git.CreateRef(ctx, a.repository.repository.ID, input.Name, input.Sha)
+	if err != nil {
+		return err
+	}
+
+	if response.Status != http.StatusOK {
+		return errors.New(fmt.Sprintf("CreateBranch did not get a 200 back %v", response.Status))
+	}
+
+	return nil
 }
 
 func (a AzureUserRepository) PullRequests() gitprovider.PullRequestClient {
