@@ -93,7 +93,7 @@ func (o OrgRepository) Create(ctx context.Context, branch string, message string
 	if err != nil {
 		return nil, err
 	}
-	currentCommit := page[0].Get().Sha
+	currentCommit := page[0]
 
 	for _, file := range files {
 		data := *file.Content
@@ -103,7 +103,7 @@ func (o OrgRepository) Create(ctx context.Context, branch string, message string
 			Message: message,
 			Data:    []byte(data),
 			Branch:  branch,
-			Ref:     currentCommit,
+			Ref:     currentCommit.Get().Sha,
 		}
 		response, err := o.client.Contents.Create(ctx, o.repository.ID, path, &createParams)
 		if err != nil {
@@ -112,11 +112,15 @@ func (o OrgRepository) Create(ctx context.Context, branch string, message string
 		if response.Status != http.StatusCreated {
 			return nil, errors.New(fmt.Sprintf("create commit did not get a 200 back %v", response.Status))
 		}
+		//this aim to update current commit to allow adding more than once
+		//TODO: to list the whole thing for getting a sha that we have just created seems expensive, look for a better alternative
+		page, err = o.ListPage(ctx, branch, 10, 1)
+		if err != nil {
+			return nil, err
+		}
+		currentCommit = page[0]
 	}
 
-	page, err = o.ListPage(ctx, branch, 10, 1)
-	if err != nil {
-		return nil, err
-	}
-	return page[0], nil
+	return currentCommit, nil
+
 }
