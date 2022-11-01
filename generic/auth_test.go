@@ -8,11 +8,10 @@ import (
 
 func TestNewClient(t *testing.T) {
 
-	os.Setenv("GIT_REPO_URL", "http://localhost")
 	os.Setenv("GIT_KIND", "gitea")
-	os.Setenv("GIT_SERVER", "none")
-	os.Setenv("GIT_TOKEN", "1234")
-	os.Setenv("GIT_USER", "eneko")
+	os.Setenv("GIT_SERVER", "http://localhost:3000/")
+	//os.Setenv("GIT_TOKEN", "12321")
+	os.Setenv("GIT_USER", "gitea")
 
 	client, err := NewClientFromEnvironment()
 

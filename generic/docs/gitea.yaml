@@ -1,0 +1,32 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: HelmRepository
+metadata:
+  name: gitea
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://dl.gitea.io/charts/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: gitea
+  namespace: flux-system
+spec:
+  chart:
+    spec:
+      chart: gitea
+      sourceRef:
+        kind: HelmRepository
+        name: gitea
+        namespace: flux-system
+  targetNamespace: gitea
+  interval: 1m
+  values:
+    gitea:
+      admin:
+        username: "gitea"
+        password: "gitea"
+        email: "gi@tea.com"
+---
+
