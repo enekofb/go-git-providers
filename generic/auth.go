@@ -7,11 +7,6 @@ import (
 	"github.com/jenkins-x/go-scm/scm/factory"
 )
 
-const (
-	domain        = "https://dev.azure.com"
-	DefaultDomain = "dev.azure.com"
-)
-
 type ClientOptions struct {
 	Token string
 	Uri   string
@@ -19,6 +14,11 @@ type ClientOptions struct {
 
 type wrapper struct {
 	client *scm.Client
+}
+
+func NewClientFromScm(c *scm.Client) (gitprovider.Client, error) {
+
+	return wrapper{client: c}, nil
 }
 
 func NewClientFromEnvironment() (gitprovider.Client, error) {
@@ -35,7 +35,7 @@ func NewClientFromEnvironment() (gitprovider.Client, error) {
 // what endpoints.
 // This field is set at client creation time, and can't be changed.
 func (c wrapper) SupportedDomain() string {
-	return domain
+	return ""
 }
 
 // ProviderID returns the provider ID "github".

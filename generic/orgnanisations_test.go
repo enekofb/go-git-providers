@@ -2,6 +2,7 @@ package generic
 
 import (
 	"context"
+	"github.com/fluxcd/go-git-providers/gitea"
 	"github.com/fluxcd/go-git-providers/gitprovider"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -13,7 +14,7 @@ func TestGet(t *testing.T) {
 	require.Nil(t, err)
 
 	org, err := client.Organizations().Get(context.Background(), gitprovider.OrganizationRef{
-		Domain:       gitproviderDomain,
+		Domain:       gitea.gitproviderDomain,
 		Organization: "efernandezbreis",
 	})
 	require.Nil(t, err)

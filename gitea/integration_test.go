@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package generic
+package gitea
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/fluxcd/go-git-providers/generic"
 	"math/rand"
 	"os"
 	"testing"
@@ -65,7 +66,7 @@ var _ = Describe("Gitea Provider", func() {
 		//os.Setenv("GIT_TOKEN", "12321")
 		os.Setenv("GIT_USER", "gitea")
 
-		c, err = NewClientFromEnvironment()
+		c, err = generic.NewClientFromEnvironment()
 		Expect(err).ToNot(HaveOccurred())
 	})
 
