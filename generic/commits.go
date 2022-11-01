@@ -25,7 +25,7 @@ func (a AzureCommit) Get() gitprovider.CommitInfo {
 
 // TODO: pagination not supported
 func (a UserRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
-	commit, _, err := a.client.Contents.List(ctx, a.repository.ID, "", branch)
+	commit, _, err := a.client.Contents.List(ctx, a.repository.FullName, "", branch)
 	if err != nil {
 		return nil, err
 	}

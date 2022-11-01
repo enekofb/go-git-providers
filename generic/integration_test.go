@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"testing"
 	"time"
 
@@ -59,13 +60,18 @@ var _ = Describe("Gitea Provider", func() {
 
 	BeforeSuite(func() {
 		var err error
+		os.Setenv("GIT_KIND", "gitea")
+		os.Setenv("GIT_SERVER", "http://localhost:3000/")
+		//os.Setenv("GIT_TOKEN", "12321")
+		os.Setenv("GIT_USER", "gitea")
+
 		c, err = NewClientFromEnvironment()
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	It("should be possible to create a pr for a user repository", func() {
 
-		userRepoRef := newUserRepoRef("efernandezbreis", "weaveworks")
+		userRepoRef := newUserRepoRef("gitea", "gitea/weaveworks")
 
 		var userRepo gitprovider.UserRepository
 		retryOp := testutils.RetryOp{}
