@@ -1,13 +1,10 @@
-package azure
+package generic
 
 import (
 	"context"
-	"fmt"
 	"github.com/fluxcd/go-git-providers/gitprovider"
 	"github.com/jenkins-x/go-scm/scm"
-	"github.com/jenkins-x/go-scm/scm/driver/azure"
-	"github.com/jenkins-x/go-scm/scm/transport"
-	"net/http"
+	"github.com/jenkins-x/go-scm/scm/factory"
 )
 
 const (
@@ -16,30 +13,20 @@ const (
 )
 
 type ClientOptions struct {
-	Org     string
-	Project string
-	Token   string
+	Token string
+	Uri   string
 }
 
 type wrapper struct {
 	client *scm.Client
 }
 
-func NewClient(clientOptions ClientOptions) (gitprovider.Client, error) {
+func NewClientFromEnvironment() (gitprovider.Client, error) {
 
-	project := clientOptions.Project
-	org := clientOptions.Org
-
-	c, err := azure.New(domain, org, project)
-
-	c.Client = &http.Client{
-		Transport: &transport.Custom{
-			Before: func(r *http.Request) {
-				r.Header.Set("Authorization", fmt.Sprintf("Basic %s", clientOptions.Token))
-			},
-		},
+	c, err := factory.NewClientFromEnvironment()
+	if err != nil {
+		return nil, err
 	}
-
 	return wrapper{client: c}, err
 }
 
