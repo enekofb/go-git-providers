@@ -39,6 +39,7 @@ func TestNewClient(t *testing.T) {
 			var c gitprovider.Client
 			var err error
 
+			//TODO inconsistent api for creating client between azure and generic
 			switch gitProvider.kind {
 			case "azure":
 				c, err = createAzureClient(gitProvider)
@@ -67,7 +68,7 @@ func TestNewClient(t *testing.T) {
 			object := userRepo.APIObject()
 			repository := object.(*scm.Repository)
 
-			//TODO inconsistent naming
+			//TODO inconsistent api for naming between generic and azure
 			switch gitProvider.kind {
 			case "azure":
 				require.Equal(t, gitProvider.repo, repository.Name)

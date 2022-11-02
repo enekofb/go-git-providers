@@ -120,17 +120,17 @@ func TestCreatePR(t *testing.T) {
 		server      string
 		tokenEnvVar string
 		user        string
-		project     string
 		repo        string
 	}{
-		//{"gitea", "http://localhost:3000", "GITEA_TOKEN", "gitea"},
-		//{"azure", "https://dev.azure.com", "AZURE_DEVOPS_TOKEN", "efernandezbreis"},
-		{"bitbucketcloud", "", "GITEA_TOKEN", "enekoww", "weaveworks", "test"},
+		{"azure", "https://dev.azure.com", "AZURE_DEVOPS_TOKEN", "efernandezbreis", "weaveworks"},
+		//{"gitea", "http://localhost:3000", "GITEA_TOKEN", "gitea", "gitea/weaveworks"},
+		//{"bitbucketcloud", "", "GITEA_TOKEN", "enekoww", "enekoww/test"},
 	}
 
 	for _, gitProvider := range gitProviders {
 		t.Run(gitProvider.kind+" should be possible to create a pr for a user repository", func(t *testing.T) {
-			ctx := context.Background()
+			// 1 - create client
+
 			os.Setenv("GIT_KIND", gitProvider.kind)
 			os.Setenv("GIT_SERVER", gitProvider.server)
 			if gitProvider.tokenEnvVar != "" {
@@ -138,21 +138,26 @@ func TestCreatePR(t *testing.T) {
 			}
 			os.Setenv("GIT_USER", gitProvider.user)
 
-			c, err := NewClientFromEnvironment()
+			var c gitprovider.Client
+			var err error
 
-			require.NoError(t, err)
-			require.NotNil(t, c)
-			require.NotNil(t, c.SupportedDomain())
-			require.NotNil(t, c.Organizations())
-			require.NotNil(t, c.UserRepositories())
-			require.NotNil(t, c.Organizations())
+			//TODO inconsistent api for creating client between azure and generic
+			switch gitProvider.kind {
+			case "azure":
+				c, err = createAzureClient(gitProvider)
+			default:
+				c, err = NewClientFromEnvironment()
+			}
 
+			// 2- get repo
+
+			ctx := context.Background()
 			userRepoRef := newUserRepoRef(gitProvider.user, gitProvider.repo)
-
 			var userRepo gitprovider.UserRepository
-
 			userRepo, err = c.UserRepositories().Get(ctx, userRepoRef)
 			require.NoError(t, err)
+
+			// 3 - get latest commit for default branch
 
 			defaultBranch := userRepo.Get().DefaultBranch
 
@@ -169,8 +174,12 @@ func TestCreatePR(t *testing.T) {
 
 			branchName := fmt.Sprintf("test-branch-%03d", rand.Intn(1000))
 
+			// 4 create branch out of it
+
 			err = userRepo.Branches().Create(ctx, branchName, latestCommit.Get().Sha)
 			require.NoError(t, err)
+
+			// 5 create commit on branch
 
 			path := "setup/config.txt"
 			content := "yaml content"
@@ -182,12 +191,13 @@ func TestCreatePR(t *testing.T) {
 			}
 
 			_, err = userRepo.Commits().Create(ctx, branchName, "added config file", files)
-			Expect(err).ToNot(HaveOccurred())
+			require.NoError(t, err)
+
+			// 6 create pr
 
 			pr, err := userRepo.PullRequests().Create(ctx, "Added config file", branchName, *defaultBranch, "added config file")
-			Expect(err).ToNot(HaveOccurred())
-			Expect(pr.Get().WebURL).ToNot(BeEmpty())
-			Expect(pr.Get().Merged).To(BeFalse())
+			require.NoError(t, err)
+			require.NotEmpty(t, pr.Get().WebURL)
 
 		})
 	}
