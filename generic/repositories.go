@@ -25,10 +25,19 @@ func (c *UserRepositories) Get(ctx context.Context, ref gitprovider.UserReposito
 	if err != nil {
 		return nil, err
 	}
+	//TODO not consistent usage
+	var repositoryId string
+	switch c.client.Driver.String() {
+	case "azure":
+		repositoryId = repository.ID
+	default:
+		repositoryId = repository.FullName
+	}
 
 	return UserRepository{
-		repository: repository,
-		client:     c.client,
+		repository:   repository,
+		client:       c.client,
+		repositoryId: repositoryId,
 	}, nil
 }
 
@@ -96,13 +105,15 @@ func (c *OrgRepositories) Reconcile(ctx context.Context, r gitprovider.OrgReposi
 }
 
 type UserRepository struct {
-	repository *scm.Repository
-	client     *scm.Client
+	repository   *scm.Repository
+	client       *scm.Client
+	repositoryId string
 }
 
 type OrgRepository struct {
-	repository *scm.Repository
-	client     *scm.Client
+	repository   *scm.Repository
+	client       *scm.Client
+	repositoryId string
 }
 
 func (o OrgRepository) APIObject() interface{} {

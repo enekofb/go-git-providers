@@ -59,7 +59,7 @@ func (a UserRepository) ListPage(ctx context.Context, branch string, perPage int
 
 	default:
 		//TODO had to do switch as find branch is not supported by azure
-		ref, _, err := a.client.Git.FindBranch(ctx, a.repository.ID, branch)
+		ref, _, err := a.client.Git.FindBranch(ctx, a.repository.FullName, branch)
 		if err != nil {
 			return nil, err
 		}
@@ -104,7 +104,7 @@ func (a UserRepository) Create(ctx context.Context, branch string, message strin
 			Branch:  branch,
 			Ref:     currentCommit,
 		}
-		response, err := a.client.Contents.Create(ctx, a.repository.ID, path, &createParams)
+		response, err := a.client.Contents.Create(ctx, a.repositoryId, path, &createParams)
 		if err != nil {
 			return nil, err
 		}
