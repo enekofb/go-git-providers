@@ -9,34 +9,45 @@ import (
 	"net/http"
 )
 
-type AzureCommit struct {
-	fileEntry *scm.FileEntry
+type Commmit struct {
+	commit *scm.Commit
 }
 
-func (a AzureCommit) APIObject() interface{} {
-	return a.fileEntry
+func (a Commmit) APIObject() interface{} {
+	return a.commit
 }
 
-func (a AzureCommit) Get() gitprovider.CommitInfo {
+func (a Commmit) Get() gitprovider.CommitInfo {
 	return gitprovider.CommitInfo{
-		Sha: a.fileEntry.Sha,
+		Sha: a.commit.Sha,
 	}
 }
 
 // TODO: pagination not supported
 func (a UserRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
-	commit, _, err := a.client.Contents.List(ctx, a.repository.ID, "", branch)
+
+	findCommit, _, err := a.client.Git.FindCommit(ctx, a.repository.ID, branch)
 	if err != nil {
 		return nil, err
 	}
 
-	commits := make([]gitprovider.Commit, 0, len(commit))
+	commits := make([]gitprovider.Commit, 0, 1)
 
-	for _, fe := range commit {
+	commits = append(commits, Commmit{commit: findCommit})
 
-		commits = append(commits, AzureCommit{fileEntry: fe})
+	return commits, nil
+}
 
+func (o OrgRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
+	findCommit, _, err := o.client.Git.FindCommit(ctx, o.repository.ID, branch)
+	if err != nil {
+		return nil, err
 	}
+
+	commits := make([]gitprovider.Commit, 0, 1)
+
+	commits = append(commits, Commmit{commit: findCommit})
+
 	return commits, nil
 }
 
@@ -69,22 +80,6 @@ func (a UserRepository) Create(ctx context.Context, branch string, message strin
 	}
 
 	return nil, nil
-}
-
-func (o OrgRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
-	commit, _, err := o.client.Contents.List(ctx, o.repository.ID, "", branch)
-	if err != nil {
-		return nil, err
-	}
-
-	commits := make([]gitprovider.Commit, 0, len(commit))
-
-	for _, fe := range commit {
-
-		commits = append(commits, AzureCommit{fileEntry: fe})
-
-	}
-	return commits, nil
 }
 
 func (o OrgRepository) Create(ctx context.Context, branch string, message string, files []gitprovider.CommitFile) (gitprovider.Commit, error) {

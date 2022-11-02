@@ -179,9 +179,7 @@ func (o OrgRepository) TeamAccess() gitprovider.TeamAccessClient {
 }
 
 func (a UserRepository) APIObject() interface{} {
-
-	//TODO implement me
-	panic("implement me")
+	return a.repository
 }
 
 func (a UserRepository) Update(ctx context.Context) error {
