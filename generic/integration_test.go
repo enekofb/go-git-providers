@@ -122,8 +122,8 @@ func TestCreatePR(t *testing.T) {
 		user        string
 		repo        string
 	}{
-		//{"azure", "https://dev.azure.com", "AZURE_DEVOPS_TOKEN", "efernandezbreis", "weaveworks"},
-		//{"gitea", "http://localhost:3000", "GITEA_TOKEN", "gitea", "gitea/weaveworks"},
+		{"azure", "https://dev.azure.com", "AZURE_DEVOPS_TOKEN", "efernandezbreis", "weaveworks"},
+		{"gitea", "http://localhost:3000", "GITEA_TOKEN", "gitea", "gitea/weaveworks"},
 		{"bitbucketcloud", "", "GITEA_TOKEN", "enekoww", "enekoww/test"},
 	}
 
