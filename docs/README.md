@@ -16,8 +16,6 @@ The aim is that we could create a generic provider that is able to interact with
 git providers using jenkins scm.
 
 ```
-Feature: I can create a generic git provider out of jenkins scm
-  
   Scenario Outline: can interact with multiple git providers via generic git repo
     Given a git <provider>
     And generic configuration for that git provider
@@ -34,26 +32,29 @@ Feature: I can create a generic git provider out of jenkins scm
 
 ```
 
-Which is implemented via this [test](generic/auth_test.go)
-
-
-
-
-
-
-
+Which is implemented via this [test](../generic/auth_test.go)
 
 ##  I can create PR using a similar flow to weave gitops enterprise with the generic one
 
+The aim is that we could create a PR business logic based on generic git provider 
+that works for any git provider to integrate with weave gitops enterprise
 
-# Gitea 
+```
+  Scenario Outline: I can create a pr for any git provider
+    Given a git <provider>
+    And generic configuration for that git provider
+    And a git <repo>
+    And a generic git provider client 
+    When replicated the add flow from weave gitops enteprise
+    Then i have a pr opened in the configuraiton repo  
 
+  Examples:
+    | provider |  repo        |
+    |    azure |   weaveworks |
+    |    gitea |   weaveworks |
+    |    bitbucketcloud |   weaveworks |  
 
-- I could install  via tmp/gitea.yaml
+```
+Which is implemented via this [test](../generic/integration_test.go)
 
-![](gitea/Screenshot 2022-11-01 at 17.41.19.png)
-
-- I could create a client via test
-- I could not create PR due to create branch not avaialble
-  https://github.com/jenkins-x/go-scm/blob/main/scm/driver/gitea/git.go#L40
 
