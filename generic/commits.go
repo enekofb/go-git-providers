@@ -1,4 +1,4 @@
-package azure
+package generic
 
 import (
 	"context"
@@ -9,15 +9,29 @@ import (
 	"net/http"
 )
 
-type AzureCommit struct {
+type CommitFileReference struct {
 	fileEntry *scm.FileEntry
 }
 
-func (a AzureCommit) APIObject() interface{} {
+type CommitReference struct {
+	reference *scm.Reference
+}
+
+func (a CommitReference) APIObject() interface{} {
+	return a.reference
+}
+
+func (a CommitReference) Get() gitprovider.CommitInfo {
+	return gitprovider.CommitInfo{
+		Sha: a.reference.Sha,
+	}
+}
+
+func (a CommitFileReference) APIObject() interface{} {
 	return a.fileEntry
 }
 
-func (a AzureCommit) Get() gitprovider.CommitInfo {
+func (a CommitFileReference) Get() gitprovider.CommitInfo {
 	return gitprovider.CommitInfo{
 		Sha: a.fileEntry.Sha,
 	}
@@ -25,19 +39,51 @@ func (a AzureCommit) Get() gitprovider.CommitInfo {
 
 // TODO: pagination not supported
 func (a UserRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
-	commit, _, err := a.client.Contents.List(ctx, a.repository.ID, "", branch)
-	if err != nil {
-		return nil, err
+
+	driverName := a.client.Driver.String()
+	switch driverName {
+	case "azure":
+		commit, _, err := a.client.Contents.List(ctx, a.repository.ID, "", branch)
+		if err != nil {
+			return nil, err
+		}
+
+		commits := make([]gitprovider.Commit, 0, len(commit))
+
+		for _, fe := range commit {
+
+			commits = append(commits, CommitFileReference{fileEntry: fe})
+
+		}
+		return commits, nil
+
+	default:
+		//TODO had to do switch as find branch is not supported by azure
+		ref, _, err := a.client.Git.FindBranch(ctx, a.repository.FullName, branch)
+		if err != nil {
+			return nil, err
+		}
+		commit := CommitReference{reference: ref}
+		return []gitprovider.Commit{commit}, nil
+
 	}
 
-	commits := make([]gitprovider.Commit, 0, len(commit))
+	return nil, nil
 
-	for _, fe := range commit {
+}
 
-		commits = append(commits, AzureCommit{fileEntry: fe})
-
-	}
-	return commits, nil
+func (o OrgRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
+	//findCommit, _, err := o.client.Git.FindCommit(ctx, o.repository.ID, branch)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//commits := make([]gitprovider.Commit, 0, 1)
+	//
+	//commits = append(commits, CommitFileReference{commit: findCommit})
+	//
+	//return commits, nil
+	return nil, nil
 }
 
 func (a UserRepository) Create(ctx context.Context, branch string, message string, files []gitprovider.CommitFile) (gitprovider.Commit, error) {
@@ -58,7 +104,7 @@ func (a UserRepository) Create(ctx context.Context, branch string, message strin
 			Branch:  branch,
 			Ref:     currentCommit,
 		}
-		response, err := a.client.Contents.Create(ctx, a.repository.ID, path, &createParams)
+		response, err := a.client.Contents.Create(ctx, a.repositoryId, path, &createParams)
 		if err != nil {
 			return nil, err
 		}
@@ -69,22 +115,6 @@ func (a UserRepository) Create(ctx context.Context, branch string, message strin
 	}
 
 	return nil, nil
-}
-
-func (o OrgRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
-	commit, _, err := o.client.Contents.List(ctx, o.repository.ID, "", branch)
-	if err != nil {
-		return nil, err
-	}
-
-	commits := make([]gitprovider.Commit, 0, len(commit))
-
-	for _, fe := range commit {
-
-		commits = append(commits, AzureCommit{fileEntry: fe})
-
-	}
-	return commits, nil
 }
 
 func (o OrgRepository) Create(ctx context.Context, branch string, message string, files []gitprovider.CommitFile) (gitprovider.Commit, error) {

@@ -1,4 +1,4 @@
-package azure
+package generic
 
 import (
 	"context"
@@ -44,7 +44,7 @@ func (a UserRepositoryPullRequests) Create(ctx context.Context, title, branch, b
 		Base:  baseBranch,
 	}
 
-	outputPR, response, err := a.repository.client.PullRequests.Create(context.Background(), a.repository.repository.ID, input)
+	outputPR, response, err := a.repository.client.PullRequests.Create(context.Background(), a.repository.repositoryId, input)
 	if err != nil {
 		return nil, err
 	}
