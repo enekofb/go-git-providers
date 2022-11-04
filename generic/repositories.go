@@ -3,17 +3,17 @@ package generic
 import (
 	"context"
 	"errors"
+	drone "github.com/drone/go-scm/scm"
 	"github.com/fluxcd/go-git-providers/gitprovider"
-	"github.com/jenkins-x/go-scm/scm"
 )
 
 // UserRepositories operates on repositories the user has access to.
 type UserRepositories struct {
-	client *scm.Client
+	client *drone.Client
 }
 
 type OrgRepositories struct {
-	client *scm.Client
+	client *drone.Client
 }
 
 // Get returns the repository at the given path.
@@ -31,7 +31,7 @@ func (c *UserRepositories) Get(ctx context.Context, ref gitprovider.UserReposito
 	case "azure":
 		repositoryId = repository.ID
 	default:
-		repositoryId = repository.FullName
+		repositoryId = repository.Name
 	}
 
 	return UserRepository{
@@ -105,15 +105,25 @@ func (c *OrgRepositories) Reconcile(ctx context.Context, r gitprovider.OrgReposi
 }
 
 type UserRepository struct {
-	repository   *scm.Repository
-	client       *scm.Client
+	repository   *drone.Repository
+	client       *drone.Client
 	repositoryId string
 }
 
+func (a UserRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 type OrgRepository struct {
-	repository   *scm.Repository
-	client       *scm.Client
+	repository   *drone.Repository
+	client       *drone.Client
 	repositoryId string
+}
+
+func (o OrgRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (o OrgRepository) APIObject() interface{} {
@@ -142,7 +152,7 @@ func (o OrgRepository) Repository() gitprovider.RepositoryRef {
 
 func (o OrgRepository) Get() gitprovider.RepositoryInfo {
 	return gitprovider.RepositoryInfo{
-		Description:   &(o.repository.FullName),
+		Description:   &(o.repository.Name),
 		DefaultBranch: &(o.repository.Branch),
 		Visibility:    nil,
 	}
@@ -215,7 +225,7 @@ func (a UserRepository) Repository() gitprovider.RepositoryRef {
 
 func (a UserRepository) Get() gitprovider.RepositoryInfo {
 	return gitprovider.RepositoryInfo{
-		Description:   &(a.repository.FullName),
+		Description:   &(a.repository.Name),
 		DefaultBranch: &(a.repository.Branch),
 		Visibility:    nil,
 	}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jenkins-x/go-scm/scm"
+	drone "github.com/drone/go-scm/scm"
 	"net/http"
 )
 
@@ -14,11 +14,11 @@ type UserRepositoryBranches struct {
 
 func (a UserRepositoryBranches) Create(ctx context.Context, branch, sha string) error {
 
-	input := &scm.ReferenceInput{
+	input := &drone.CreateBranch{
 		Name: branch,
 		Sha:  sha,
 	}
-	_, response, err := a.repository.client.Git.CreateRef(ctx, a.repository.repository.ID, input.Name, input.Sha)
+	response, err := a.repository.client.Git.CreateBranch(ctx, a.repository.repository.ID, input)
 	if err != nil {
 		return err
 	}
@@ -36,11 +36,11 @@ type OrgRepositoryBranches struct {
 
 func (o OrgRepositoryBranches) Create(ctx context.Context, branch, sha string) error {
 
-	input := &scm.ReferenceInput{
+	input := &drone.CreateBranch{
 		Name: branch,
 		Sha:  sha,
 	}
-	_, response, err := o.repository.client.Git.CreateRef(ctx, o.repository.repository.ID, input.Name, input.Sha)
+	response, err := o.repository.client.Git.CreateBranch(ctx, o.repository.repository.ID, input)
 	if err != nil {
 		return err
 	}

@@ -2,9 +2,14 @@ package generic
 
 import (
 	"context"
+	"fmt"
+	drone "github.com/drone/go-scm/scm"
+	droneAzure "github.com/drone/go-scm/scm/driver/azure"
+	"github.com/drone/go-scm/scm/transport"
+	"net/http"
+
 	"github.com/fluxcd/go-git-providers/gitprovider"
-	"github.com/jenkins-x/go-scm/scm"
-	"github.com/jenkins-x/go-scm/scm/factory"
+	"os"
 )
 
 type ClientOptions struct {
@@ -12,60 +17,80 @@ type ClientOptions struct {
 	Uri   string
 }
 
-type wrapper struct {
-	client *scm.Client
+type wrapperDrone struct {
+	client *drone.Client
 }
 
-func NewClientFromScm(c *scm.Client) (gitprovider.Client, error) {
+func NewClientFromScm(c *drone.Client) (gitprovider.Client, error) {
 
-	return wrapper{client: c}, nil
+	return wrapperDrone{client: c}, nil
 }
 
-func NewClientFromEnvironment() (gitprovider.Client, error) {
+func NewClientFromEnvironmentDrone() (wrapperDrone, error) {
+	var c *drone.Client
+	driver := os.Getenv("GIT_KIND")
+	//serverURL := os.Getenv("GIT_SERVER")
+	token := os.Getenv("GIT_TOKEN")
+	username := os.Getenv("GIT_USER")
+	repo := os.Getenv("GIT_REPO")
 
-	c, err := factory.NewClientFromEnvironment()
-	if err != nil {
-		return nil, err
+	//clientID := os.Getenv("BB_OAUTH_CLIENT_ID")
+	//clientSecret := os.Getenv("BB_OAUTH_CLIENT_SECRET")
+	switch driver {
+	case "azure":
+		c = droneAzure.NewDefault(username, repo)
+		c.Client = &http.Client{
+			Transport: &transport.Custom{
+				Before: func(r *http.Request) {
+					r.Header.Set("Authorization", fmt.Sprintf("Basic %s", token))
+				},
+			},
+		}
+
+	default:
+		return wrapperDrone{}, fmt.Errorf("Unsupported GIT_KIND value: %s", driver)
 	}
-	return wrapper{client: c}, err
+
+	return wrapperDrone{client: c}, nil
+
 }
 
 // SupportedDomain returns the domain endpoint for this client, e.g. "github.com", "enterprise.github.com" or
 // "my-custom-git-server.com:6443". This allows a higher-level user to know what Client to use for
 // what endpoints.
 // This field is set at client creation time, and can't be changed.
-func (c wrapper) SupportedDomain() string {
+func (c wrapperDrone) SupportedDomain() string {
 	return ""
 }
 
 // ProviderID returns the provider ID "github".
 // This field is set at client creation time, and can't be changed.
-func (c wrapper) ProviderID() gitprovider.ProviderID {
+func (c wrapperDrone) ProviderID() gitprovider.ProviderID {
 	return ""
 }
 
 // Raw returns the Go GitHub client (github.com/google/go-github/v47/github *Client)
 // used under the hood for accessing GitHub.
-func (c wrapper) Raw() interface{} {
+func (c wrapperDrone) Raw() interface{} {
 	return nil
 }
 
 // Organizations returns the Organisations handling sets of organizations.
-func (c wrapper) Organizations() gitprovider.OrganizationsClient {
+func (c wrapperDrone) Organizations() gitprovider.OrganizationsClient {
 	return &Organisations{client: c.client}
 }
 
 // OrgRepositories returns the OrgRepositoriesClient handling sets of repositories in an organization.
-func (c wrapper) OrgRepositories() gitprovider.OrgRepositoriesClient {
+func (c wrapperDrone) OrgRepositories() gitprovider.OrgRepositoriesClient {
 	return &OrgRepositories{client: c.client}
 }
 
 // UserRepositories returns the UserRepositories handling sets of repositories for a user.
-func (c wrapper) UserRepositories() gitprovider.UserRepositoriesClient {
+func (c wrapperDrone) UserRepositories() gitprovider.UserRepositoriesClient {
 	return &UserRepositories{client: c.client}
 }
 
 // HasTokenPermission returns true if the given Token has the given permissions.
-func (c wrapper) HasTokenPermission(ctx context.Context, permission gitprovider.TokenPermission) (bool, error) {
+func (c wrapperDrone) HasTokenPermission(ctx context.Context, permission gitprovider.TokenPermission) (bool, error) {
 	return false, nil
 }

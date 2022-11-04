@@ -9,7 +9,7 @@ import (
 
 func TestGet(t *testing.T) {
 
-	client, err := NewClientFromEnvironment()
+	client, err := NewClientFromEnvironmentDrone()
 	require.Nil(t, err)
 
 	org, err := client.Organizations().Get(context.Background(), gitprovider.OrganizationRef{

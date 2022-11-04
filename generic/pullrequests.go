@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	drone "github.com/drone/go-scm/scm"
 	"github.com/fluxcd/go-git-providers/gitprovider"
-	"github.com/jenkins-x/go-scm/scm"
 	"net/http"
 )
 
@@ -19,7 +19,7 @@ func (a UserRepositoryPullRequests) List(ctx context.Context) ([]gitprovider.Pul
 }
 
 type AzurePullRequest struct {
-	pullRequest *scm.PullRequest
+	pullRequest *drone.PullRequest
 }
 
 func (a AzurePullRequest) APIObject() interface{} {
@@ -37,11 +37,11 @@ func (a AzurePullRequest) Get() gitprovider.PullRequestInfo {
 
 func (a UserRepositoryPullRequests) Create(ctx context.Context, title, branch, baseBranch, description string) (gitprovider.PullRequest, error) {
 
-	input := &scm.PullRequestInput{
-		Title: title,
-		Body:  description,
-		Head:  branch,
-		Base:  baseBranch,
+	input := &drone.PullRequestInput{
+		Title:  title,
+		Body:   description,
+		Source: branch,
+		Target: baseBranch,
 	}
 
 	outputPR, response, err := a.repository.client.PullRequests.Create(context.Background(), a.repository.repositoryId, input)
@@ -91,11 +91,11 @@ func (o OrgRepositoryPullRequests) List(ctx context.Context) ([]gitprovider.Pull
 }
 
 func (o OrgRepositoryPullRequests) Create(ctx context.Context, title, branch, baseBranch, description string) (gitprovider.PullRequest, error) {
-	input := &scm.PullRequestInput{
-		Title: title,
-		Body:  description,
-		Head:  branch,
-		Base:  baseBranch,
+	input := &drone.PullRequestInput{
+		Title:  title,
+		Body:   description,
+		Source: branch,
+		Target: baseBranch,
 	}
 
 	outputPR, response, err := o.repository.client.PullRequests.Create(context.Background(), o.repository.repository.ID, input)

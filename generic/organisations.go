@@ -3,12 +3,12 @@ package generic
 import (
 	"context"
 	"errors"
+	drone "github.com/drone/go-scm/scm"
 	"github.com/fluxcd/go-git-providers/gitprovider"
-	"github.com/jenkins-x/go-scm/scm"
 )
 
 type Organisations struct {
-	client *scm.Client
+	client *drone.Client
 }
 
 type Organization struct {

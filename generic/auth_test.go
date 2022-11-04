@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/drone/go-scm/scm"
+	"github.com/drone/go-scm/scm/driver/azure"
+	"github.com/drone/go-scm/scm/transport"
 	"github.com/fluxcd/go-git-providers/gitprovider"
-	"github.com/jenkins-x/go-scm/scm"
-	"github.com/jenkins-x/go-scm/scm/driver/azure"
-	"github.com/jenkins-x/go-scm/scm/transport"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"os"
@@ -44,7 +44,7 @@ func TestNewClient(t *testing.T) {
 			case "azure":
 				c, err = createAzureClient(gitProvider)
 			default:
-				c, err = NewClientFromEnvironment()
+				c, err = NewClientFromEnvironmentDrone()
 			}
 
 			require.NoError(t, err)
@@ -73,7 +73,7 @@ func TestNewClient(t *testing.T) {
 			case "azure":
 				require.Equal(t, gitProvider.repo, repository.Name)
 			default:
-				require.Equal(t, gitProvider.repo, repository.FullName)
+				require.Equal(t, gitProvider.repo, repository.Name)
 			}
 		})
 	}
