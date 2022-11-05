@@ -111,8 +111,25 @@ type UserRepository struct {
 }
 
 func (a UserRepository) ListPage(ctx context.Context, branch string, perPage int, page int) ([]gitprovider.Commit, error) {
-	//TODO implement me
-	panic("implement me")
+
+	commitListOptions := drone.CommitListOptions{
+		Ref:  branch,
+		Page: page,
+		Size: perPage,
+	}
+	commits, _, err := a.client.Git.ListCommits(ctx, a.repositoryId, commitListOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	gpCommits := []gitprovider.Commit{}
+	for _, commit := range commits {
+		c := Commit{
+			commit: commit,
+		}
+		gpCommits = append(gpCommits, c)
+	}
+	return gpCommits, nil
 }
 
 type OrgRepository struct {

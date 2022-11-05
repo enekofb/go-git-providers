@@ -156,7 +156,7 @@ func TestCreatePR(t *testing.T) {
 
 			defaultBranch := userRepo.Get().DefaultBranch
 
-			var commits []gitprovider.Commit = []gitprovider.Commit{}
+			var commits []gitprovider.Commit
 
 			commits, err = userRepo.Commits().ListPage(ctx, *defaultBranch, 1, 0)
 			require.NoError(t, err)

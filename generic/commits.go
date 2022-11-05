@@ -13,6 +13,20 @@ type CommitReference struct {
 	reference *drone.Reference
 }
 
+type Commit struct {
+	commit *drone.Commit
+}
+
+func (c Commit) APIObject() interface{} {
+	return c.commit
+}
+
+func (c Commit) Get() gitprovider.CommitInfo {
+	return gitprovider.CommitInfo{
+		Sha: c.commit.Sha,
+	}
+}
+
 func (a CommitReference) APIObject() interface{} {
 	return a.reference
 }
