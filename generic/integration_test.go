@@ -122,8 +122,8 @@ func TestCreatePR(t *testing.T) {
 		user        string
 		repo        string
 	}{
-		{"azure", "https://dev.azure.com", "AZURE_DEVOPS_TOKEN", "efernandezbreis", "weaveworks"},
-		//{"gitea", "http://localhost:3000", "GITEA_TOKEN", "gitea", "gitea/weaveworks"},
+		//{"azure", "https://dev.azure.com", "AZURE_DEVOPS_TOKEN", "efernandezbreis", "weaveworks"},
+		{"gitea", "http://localhost:3000", "GITEA_TOKEN", "gitea", "gitea/weaveworks"},
 		//{"bitbucketcloud", "", "GITEA_TOKEN", "enekoww", "enekoww/test"},
 	}
 
@@ -171,10 +171,11 @@ func TestCreatePR(t *testing.T) {
 
 			// 4 create branch out of it
 			switch gitProvider.kind {
-			//TODO gitea does not support creating references https://github.com/jenkins-x/go-scm/blob/main/scm/driver/gitea/git.go#L39
+			//TODO gitea does not support creating branches https://github.com/drone/go-scm/blob/master/scm/driver/gitea/git.go#L20
 			//it would require it to extend it via https://pkg.go.dev/code.gitea.io/sdk/gitea#Client.CreateBranch
 			//TODO bitbucket does not support creating branches https://github.com/jenkins-x/go-scm/blob/main/scm/driver/bitbucket/git.go#L51
 			case "gitea":
+				branchName = "test"
 			case "bitbucketcloud":
 				//using a fixed one instead to move one
 				branchName = "test"
@@ -195,6 +196,8 @@ func TestCreatePR(t *testing.T) {
 			switch gitProvider.kind {
 			//TODO bitbucket does not support creating commits https://github.com/jenkins-x/go-scm/blob/main/scm/driver/bitbucket/content.go#L33
 			case "bitbucketcloud":
+			//TODO not supported https://github.com/drone/go-scm/blob/master/scm/driver/gitea/content.go#L30
+			case "gitea":
 				//ignore me
 			default:
 				_, err = userRepo.Commits().Create(ctx, branchName, "added config file", files)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	drone "github.com/drone/go-scm/scm"
 	droneAzure "github.com/drone/go-scm/scm/driver/azure"
+	"github.com/drone/go-scm/scm/driver/gitea"
 	"github.com/drone/go-scm/scm/transport"
 	"net/http"
 
@@ -29,8 +30,9 @@ func NewClientFromScm(c *drone.Client) (gitprovider.Client, error) {
 
 func NewClientFromEnvironmentDrone() (wrapperDrone, error) {
 	var c *drone.Client
+	var err error
 	driver := os.Getenv("GIT_KIND")
-	//serverURL := os.Getenv("GIT_SERVER")
+	serverURL := os.Getenv("GIT_SERVER")
 	token := os.Getenv("GIT_TOKEN")
 	username := os.Getenv("GIT_USER")
 	repo := os.Getenv("GIT_REPO")
@@ -50,6 +52,19 @@ func NewClientFromEnvironmentDrone() (wrapperDrone, error) {
 			Transport: &transport.Custom{
 				Before: func(r *http.Request) {
 					r.Header.Set("Authorization", fmt.Sprintf("Basic %s", encodedToken))
+				},
+			},
+		}
+	case "gitea":
+		c, err = gitea.New(serverURL)
+		if err != nil {
+			return wrapperDrone{}, err
+		}
+
+		c.Client = &http.Client{
+			Transport: &transport.Custom{
+				Before: func(r *http.Request) {
+					r.Header.Set("Authorization", fmt.Sprintf("token %s", token))
 				},
 			},
 		}

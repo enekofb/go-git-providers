@@ -3,6 +3,7 @@ package generic
 import (
 	"context"
 	"errors"
+	"fmt"
 	drone "github.com/drone/go-scm/scm"
 	"github.com/fluxcd/go-git-providers/gitprovider"
 )
@@ -30,6 +31,8 @@ func (c *UserRepositories) Get(ctx context.Context, ref gitprovider.UserReposito
 	switch c.client.Driver.String() {
 	case "azure":
 		repositoryId = repository.ID
+	case "gitea":
+		repositoryId = fmt.Sprintf("%s/%s", repository.Namespace, repository.Name)
 	default:
 		repositoryId = repository.Name
 	}

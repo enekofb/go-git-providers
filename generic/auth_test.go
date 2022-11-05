@@ -6,6 +6,7 @@ import (
 	"github.com/fluxcd/go-git-providers/gitprovider"
 	"github.com/stretchr/testify/require"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -17,8 +18,8 @@ func TestNewClient(t *testing.T) {
 		user        string
 		repo        string
 	}{
-		{"azure", "https://dev.azure.com", "AZURE_DEVOPS_TOKEN", "efernandezbreis", "weaveworks"},
-		//{"gitea", "http://localhost:3000", "GITEA_TOKEN", "gitea", "gitea/weaveworks"},
+		//{"azure", "https://dev.azure.com", "AZURE_DEVOPS_TOKEN", "efernandezbreis", "weaveworks"},
+		{"gitea", "http://localhost:3000", "GITEA_TOKEN", "gitea", "gitea/weaveworks"},
 		//{"bitbucketcloud", "", "GITEA_TOKEN", "enekoww", "enekoww/test"},
 	}
 
@@ -58,7 +59,7 @@ func TestNewClient(t *testing.T) {
 			//implementation limitation
 			object := userRepo.APIObject()
 			repository := object.(*scm.Repository)
-			require.Equal(t, gitProvider.repo, repository.Name)
+			require.True(t, strings.Contains(gitProvider.repo, repository.Name))
 
 		})
 	}

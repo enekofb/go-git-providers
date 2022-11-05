@@ -26,7 +26,7 @@ spec:
     gitea:
       admin:
         username: "gitea"
-        password: "gitea"
+        password: "gitea1"
         email: "gi@tea.com"
 ---
 
