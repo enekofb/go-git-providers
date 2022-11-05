@@ -2,6 +2,7 @@ package generic
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	drone "github.com/drone/go-scm/scm"
 	droneAzure "github.com/drone/go-scm/scm/driver/azure"
@@ -39,10 +40,16 @@ func NewClientFromEnvironmentDrone() (wrapperDrone, error) {
 	switch driver {
 	case "azure":
 		c = droneAzure.NewDefault(username, repo)
+
+		var encodedToken string
+		if token != "" {
+			encodedToken = base64.StdEncoding.EncodeToString([]byte(":" + token))
+		}
+
 		c.Client = &http.Client{
 			Transport: &transport.Custom{
 				Before: func(r *http.Request) {
-					r.Header.Set("Authorization", fmt.Sprintf("Basic %s", token))
+					r.Header.Set("Authorization", fmt.Sprintf("Basic %s", encodedToken))
 				},
 			},
 		}

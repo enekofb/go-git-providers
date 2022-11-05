@@ -2,14 +2,9 @@ package generic
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
 	"github.com/drone/go-scm/scm"
-	"github.com/drone/go-scm/scm/driver/azure"
-	"github.com/drone/go-scm/scm/transport"
 	"github.com/fluxcd/go-git-providers/gitprovider"
 	"github.com/stretchr/testify/require"
-	"net/http"
 	"os"
 	"testing"
 )
@@ -23,8 +18,8 @@ func TestNewClient(t *testing.T) {
 		repo        string
 	}{
 		{"azure", "https://dev.azure.com", "AZURE_DEVOPS_TOKEN", "efernandezbreis", "weaveworks"},
-		{"gitea", "http://localhost:3000", "GITEA_TOKEN", "gitea", "gitea/weaveworks"},
-		{"bitbucketcloud", "", "GITEA_TOKEN", "enekoww", "enekoww/test"},
+		//{"gitea", "http://localhost:3000", "GITEA_TOKEN", "gitea", "gitea/weaveworks"},
+		//{"bitbucketcloud", "", "GITEA_TOKEN", "enekoww", "enekoww/test"},
 	}
 
 	for _, gitProvider := range gitProviders {
@@ -36,16 +31,12 @@ func TestNewClient(t *testing.T) {
 			}
 			os.Setenv("GIT_USER", gitProvider.user)
 
+			os.Setenv("GIT_REPO", gitProvider.repo)
+
 			var c gitprovider.Client
 			var err error
 
-			//TODO inconsistent api for creating client between azure and generic
-			switch gitProvider.kind {
-			case "azure":
-				c, err = createAzureClient(gitProvider)
-			default:
-				c, err = NewClientFromEnvironmentDrone()
-			}
+			c, err = NewClientFromEnvironmentDrone()
 
 			require.NoError(t, err)
 			require.NotNil(t, c)
@@ -67,43 +58,8 @@ func TestNewClient(t *testing.T) {
 			//implementation limitation
 			object := userRepo.APIObject()
 			repository := object.(*scm.Repository)
+			require.Equal(t, gitProvider.repo, repository.Name)
 
-			//TODO inconsistent api for naming between generic and azure
-			switch gitProvider.kind {
-			case "azure":
-				require.Equal(t, gitProvider.repo, repository.Name)
-			default:
-				require.Equal(t, gitProvider.repo, repository.Name)
-			}
 		})
 	}
-}
-
-func createAzureClient(provider struct {
-	kind        string
-	server      string
-	tokenEnvVar string
-	user        string
-	repo        string
-}) (gitprovider.Client, error) {
-	rawToken := os.Getenv(provider.tokenEnvVar)
-	if len(rawToken) == 0 {
-		return nil, fmt.Errorf("couldn't acquire AZURE_DEVOPS_TOKEN env variable")
-	}
-	var token string
-	if rawToken != "" {
-		token = base64.StdEncoding.EncodeToString([]byte(":" + rawToken))
-	}
-
-	c, _ := azure.New("https://dev.azure.com", provider.user, provider.repo)
-
-	c.Client = &http.Client{
-		Transport: &transport.Custom{
-			Before: func(r *http.Request) {
-				r.Header.Set("Authorization", fmt.Sprintf("Basic %s", token))
-			},
-		},
-	}
-
-	return NewClientFromScm(c)
 }
